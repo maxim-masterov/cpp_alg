@@ -32,4 +32,4 @@ file(GLOB SOURCES
 
 add_executable(cpp_alg ${SOURCES})
 
-#add_executable(CPP_alg_tmp main.cpp)
+#target_link_libraries(cpp_alg tbb)

@@ -28,17 +28,9 @@
 #include "solver.h"
 #include <algorithm>
 #include <numeric>
-
-//#define PARALLEL
-
-#ifdef PARALLEL
 #include <execution>
-#define SEQ std::execution::seq,
-#define PAR std::execution::par,
-#else
-#define SEQ
-#define PAR
-#endif
+
+//#define USE_STL
 
 void Solver::copyVector(Vector &vec_in, Vector &vec_out) {
 
@@ -48,13 +40,16 @@ void Solver::copyVector(Vector &vec_in, Vector &vec_out) {
      */
     // NOT_IMPLEMENTED
 
+#ifdef USE_STL
     std::copy(vec_in.getVec().begin(),
               vec_in.getVec().end(),
               vec_out.getVec().begin());
-
-//    for(int n = 0; n < vec_in.numRows(); ++n) {
-//        vec_out(n) = vec_in(n);
-//    }
+#else
+#pragma omp parallel for simd
+    for(int n = 0; n < vec_in.numRows(); ++n) {
+        vec_out(n) = vec_in(n);
+    }
+#endif
 }
 
 void Solver::calculateResidual(Matrix &A, Vector &x, Vector &b, Vector &res) {
@@ -70,6 +65,7 @@ void Solver::calculateResidual(Matrix &A, Vector &x, Vector &b, Vector &res) {
 
     copyVector(b, res);
 
+#ifdef USE_STL
     for(int i = 0; i < A.numRows(); ++i) {
         double sum = 0.0;
         sum = std::transform_reduce(A.getVec().begin() + i * A.numCols(),
@@ -78,14 +74,17 @@ void Solver::calculateResidual(Matrix &A, Vector &x, Vector &b, Vector &res) {
                                     0.0);
         res(i) -= sum;
     }
-
-//    for(int i = 0; i < A.numRows(); ++i) {
-//        double sum = 0.0;
-//        for(int j = 0; j < A.numCols(); ++j) {
-//            sum += A(i, j) * x(j);
-//        }
-//        res(i) -= sum;
-//    }
+#else
+#pragma omp parallel for
+    for(int i = 0; i < A.numRows(); ++i) {
+        double sum = 0.0;
+#pragma omp simd reduction(+:sum)
+        for(int j = 0; j < A.numCols(); ++j) {
+            sum += A(i, j) * x(j);
+        }
+        res(i) -= sum;
+    }
+#endif
 }
 
 double Solver::calculateNorm(Vector &vec) {
@@ -102,12 +101,15 @@ double Solver::calculateNorm(Vector &vec) {
     
     double sum = 0.0;
 
+#ifdef USE_STL
     sum = std::transform_reduce(vec.getVec().begin(), vec.getVec().end(),
                                 vec.getVec().begin(), 0.0);
-
-//    for(int n = 0; n < vec.getLocElts(); ++n) {
-//        sum += vec(n) * vec(n);
-//    }
+#else
+#pragma omp parallel for simd reduction(+ : sum)
+    for(int n = 0; n < vec.getLocElts(); ++n) {
+        sum += vec(n) * vec(n);
+    }
+#endif
 
     findGlobalSum(sum);
 
@@ -144,28 +146,48 @@ void Solver::solveJacobi(Matrix &A, Vector &x, Vector &b) {
     // NOT_IMPLEMENTED
 #endif
     while ( (iter < max_iter) && (residual_norm > tolerance) ) {
-        
+
+#ifndef USE_STL
+#pragma omp parallel for
+#endif
         for(int i = A.numRows() - 1; i >= 0; i--) {
             double diag = 1.;          // Diagonal element
             double sigma = 0.0;        // Just a temporary value
 
             x(i) = b(i);
 
+#ifdef USE_STL
+            sigma = std::transform_reduce(A.getVec().begin() + i * A.numCols(),
+                                          A.getVec().begin() + (i + 1) * A.numCols(),
+                                          x_old.getVec().begin(),
+                                          0.0);
+#else
+#pragma omp simd reduction(+ : sigma)
             for(int j = 0; j < A.numCols(); ++j) {
-                if (j != i)
-                    sigma = sigma + A(i, j) * x_old(j);
-                else
-                    diag = A(i, j);
+                sigma += A(i, j) * x_old(j);
             }
+#endif
+            diag = A(i, i);
+            sigma -= diag * x_old(i);
             x(i) = (x(i) - sigma) * omega / diag;
         }
         
         x.exchangeRealHalo();
 
+#ifdef USE_STL
+        std::transform(x_old.getVec().begin(), x_old.getVec().end(),
+                       x.getVec().begin(), x.getVec().begin(),
+                       [=](const double& v1, const double& v2) {
+                            return v2 + (1 - omega) * v1;
+                        });
+        copyVector(x, x_old);
+#else
+#pragma omp parallel for simd
         for(int i = 0; i < x.numRows(); ++i) {
             x(i) += (1 - omega) * x_old(i);
             x_old(i) = x(i);
         }
+#endif
 
         calculateResidual(A, x, b, res);
         residual_norm = calculateNorm(res) / calculateNorm(b);
