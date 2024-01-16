@@ -35,7 +35,7 @@ void Matrix::resize(Dimensions const &in_dims) {
     dims = in_dims;
 
     _loc_elts = dims.getNumEltsLoc().i * dims.getNumEltsLoc().j;
-    _halo_elts = countHaloElts(dims);;
+    _halo_elts = countHaloElts(dims);
 
     rows = _loc_elts;
     cols = _loc_elts + _halo_elts;

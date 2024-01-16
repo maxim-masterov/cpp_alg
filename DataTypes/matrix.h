@@ -45,11 +45,11 @@ using namespace std;
 class Matrix {
 protected:
     vector<double> data;    // Vector of elements
-    int rows;               // Number of rows
-    int cols;               // Number of columns
+    int64_t rows;               // Number of rows
+    int64_t cols;               // Number of columns
 
-    int _loc_elts;          // Number of local elements
-    int _halo_elts;         // Number of halo elements
+    int64_t _loc_elts;          // Number of local elements
+    int64_t _halo_elts;         // Number of halo elements
 
     Dimensions dims;        // Dimensions of the numerical domain
 

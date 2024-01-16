@@ -55,6 +55,7 @@ struct Faces {
     double south = 0.0;
     double north = 0.0;
     double central = 0.0;
+    double dummy_don_not_remove = 0.0;
 };
 
 /*!
@@ -67,5 +68,6 @@ struct Neighbors {
     int south = EMPTY;
     int north = EMPTY;
     int central = EMPTY;
+    double dummy_don_not_remove = EMPTY;
 };
 #endif

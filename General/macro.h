@@ -39,3 +39,13 @@ enum {
                                     << __FILE__ << ":" << __LINE__ << ".\n"; terminateExecution(); }
 
 #endif
+
+#ifdef USE_STL
+#include <execution>
+#define __SEQ std::execution::seq,
+#define __PAR std::execution::par,
+#define __PAR_UNSEQ std::execution::par_unseq,
+#define __UNSEQ std::execution::unseq,
+#define __NONE
+#define __EXEC __PAR
+#endif

@@ -30,6 +30,42 @@ file(GLOB SOURCES
         main.cpp
     )
 
-add_executable(cpp_alg ${SOURCES})
+add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 
-#target_link_libraries(cpp_alg tbb)
+if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+    set(CMAKE_CXX_FLAGS         "-O3 -march=core-avx2 -fopenmp")
+    set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -fopenmp")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=core-avx2 -fopenmp")
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES NVHPC)
+    set(CMAKE_CXX_FLAGS        "-O3 -march=core-avx2 -stdpar=multicore --experimental-stdpar --std=c++20 --gcc-toolchain=$ENV{EBROOTGCCCORE}/bin")
+    set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=core-avx2 -stdpar=multicore --experimental-stdpar --std=c++20 --gcc-toolchain=$ENV{EBROOTGCCCORE}/bin")
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
+    set(CMAKE_CXX_FLAGS         "-O3 -g -march=core-avx2 -qopenmp")
+    set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -qopenmp")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=core-avx2 -qopenmp")
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
+    set(CMAKE_CXX_FLAGS         "-O3 -g3 -march=native -fopenmp")
+    set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g3 -fopenmp")
+    set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native -fopenmp")
+endif()
+
+option(USE_STL "Use STL algorithms instead of OpenMP in the code" OFF) # Disabled by default
+
+if(USE_STL)
+    ADD_DEFINITIONS(-DUSE_STL)
+    target_link_libraries(${CMAKE_PROJECT_NAME} tbb)
+else()
+    target_link_libraries(${CMAKE_PROJECT_NAME})
+endif(USE_STL)
+
+# add_definitions(-DUSE_STL)
+# target_link_libraries(cpp_alg tbb)
+
+# target_link_libraries(cpp_alg)

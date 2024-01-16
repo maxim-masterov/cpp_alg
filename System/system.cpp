@@ -26,6 +26,7 @@
  */
 
 #include "../System/system.h"
+#include "../General/macro.h"
 
 void System::allocateMemory(Dimensions &dims, Field &T, Matrix &A,
                             Vector &x, Vector &b) {
@@ -37,6 +38,32 @@ void System::allocateMemory(Dimensions &dims, Field &T, Matrix &A,
     T.resize(dims);
 
     /* Initialize data using first touch */
+
+
+// #ifdef USE_STL
+//     for(int i = 0; i < A.numRows(); ++i) {
+//         std::fill(__EXEC
+//                   A.getVec().begin() + i * A.numCols(),
+//                   A.getVec().begin() + (i + 1) * A.numCols(),
+//                   0.0);
+//     }
+
+//     std::fill(__EXEC
+//               x.getVec().begin(),
+//               x.getVec().end(),
+//               0.0);
+//     std::fill(__EXEC
+//               b.getVec().begin(),
+//               b.getVec().end(),
+//               0.0);
+
+//     for(int i = 0; i < T.numRows(); ++i) {
+//         std::fill(__EXEC
+//                   T.getVec().begin() + i * T.numCols(),
+//                   T.getVec().begin() + (i + 1) * T.numCols(),
+//                   0.0);
+//     }
+// #else
     for(int i = 0; i < A.numRows(); ++i) {
 #pragma omp parallel for
         for(int j = 0; j < A.numCols(); ++j) {
@@ -56,6 +83,7 @@ void System::allocateMemory(Dimensions &dims, Field &T, Matrix &A,
             T(i, j) = 0.0;
         }
     }
+// #endif
 }
 
 void System::assembleSystem(Faces &bondary_values, Field &T, Matrix &A,
@@ -145,7 +173,7 @@ void System::assembleSystem(Faces &bondary_values, Field &T, Matrix &A,
 
 void System::copySolution(Vector &x, Field &T) {
 
-#pragma omp parallel for
+// #pragma omp parallel for
     for(int i = 0; i < T.numRows(); ++i) {
         for(int j = 0; j < T.numCols(); ++j) {
             T(i, j) = x(j + i * T.numCols());

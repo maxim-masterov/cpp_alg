@@ -33,6 +33,8 @@
 #include "Solver/solver.h"
 #include "IO/io.h"
 //#include "Tests/utests.h"
+// #include <tbb/tbb.h>
+// #include <tbb/global_control.h>
 
 /*!
  * @brief Report elapsed time.
@@ -144,6 +146,19 @@ int main(int argc, char** argv) {
      * Initialize the scope of MPI calls
      */
     initialize(argc, argv);
+
+    // tbb::set_threadpool_size(128);
+    // tbb::global_control(tbb::global_control::max_allowed_parallelism, 128);
+    // tbb::global_control MAXTHREADS(tbb::global_control::max_allowed_parallelism, 64);
+    // tbb::task_scheduler_observer obs;
+    // obs.on_scheduler_entry(true);
+    // obs.observe();
+
+#ifdef USE_STL
+    std::cout << "Using STL algorithms" << std::endl;
+#else
+    std::cout << "Using OMP" << std::endl;
+#endif
 
     /*
      * Choose to either run tests or to setup and run the problem
