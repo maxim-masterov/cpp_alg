@@ -41,10 +41,12 @@ void System::allocateMemory(Dimensions &dims, Field &T, Matrix &A,
 
 
 // #ifdef USE_STL
+//     int A_num_cols = (int)A.numCols();
+//     int T_num_cols = (int)T.numCols();
 //     for(int i = 0; i < A.numRows(); ++i) {
 //         std::fill(__EXEC
-//                   A.getVec().begin() + i * A.numCols(),
-//                   A.getVec().begin() + (i + 1) * A.numCols(),
+//                   A.getVec().begin() + i * A_num_cols,
+//                   A.getVec().begin() + (i + 1) * A_num_cols,
 //                   0.0);
 //     }
 
@@ -59,8 +61,8 @@ void System::allocateMemory(Dimensions &dims, Field &T, Matrix &A,
 
 //     for(int i = 0; i < T.numRows(); ++i) {
 //         std::fill(__EXEC
-//                   T.getVec().begin() + i * T.numCols(),
-//                   T.getVec().begin() + (i + 1) * T.numCols(),
+//                   T.getVec().begin() + i * T_num_cols,
+//                   T.getVec().begin() + (i + 1) * T_num_cols,
 //                   0.0);
 //     }
 // #else

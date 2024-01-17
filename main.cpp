@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
     initialize(argc, argv);
 
     // tbb::global_control(tbb::global_control::max_allowed_parallelism, 128);
-    // tbb::global_control MAXTHREADS(tbb::global_control::max_allowed_parallelism, 64);
+    // tbb::global_control MAXTHREADS(tbb::global_control::max_allowed_parallelism, 128);
     // tbb::task_scheduler_observer obs;
     // obs.on_scheduler_entry(true);
     // obs.observe();

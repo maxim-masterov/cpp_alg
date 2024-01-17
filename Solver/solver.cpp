@@ -67,8 +67,8 @@ void Solver::calculateResidual(Matrix &A, Vector &x, Vector &b, Vector &res) {
     copyVector(b, res);
 
 #ifdef USE_STL
-    auto r = std::views::common(std::views::iota((int64_t)0, A.numRows()));
-    int64_t cols = A.numCols();
+    auto r = std::views::common(std::views::iota(0, (int)A.numRows()));
+    int cols = A.numCols();
     std::for_each(__EXEC
                   begin(r), end(r), 
                 //   [&](int i) {
@@ -158,101 +158,101 @@ void Solver::solveJacobi(Matrix &A, Vector &x, Vector &b) {
 #endif
 
 #ifdef USE_STL
-    auto r = std::views::common(std::views::iota((int64_t)0, A.numRows()));
+    auto r = std::views::common(std::views::iota(0, (int)A.numRows()));
     auto r_rev = r | std::views::reverse;
     double* A_ptr = A.getData();
     double* b_ptr = b.getData();
     double* x_ptr = x.getData();
     double* x_old_ptr = x_old.getData();
-    int64_t cols = A.numCols();
-    int64_t rows = A.numRows();
+    int cols = A.numCols();
+    int rows = A.numRows();
 #endif
 
-    // for(int n = 0; n < 1e5; ++n) {
-    copyVector(x, res);
-    for(int n = 0; n < 10; ++n) {
+    // // for(int n = 0; n < 1e5; ++n) {
+    // copyVector(x, res);
+    // for(int n = 0; n < 10; ++n) {
+    //     calculateResidual(A, x, b, res);
+    //     // residual_norm = calculateNorm(res) / calculateNorm(b);
+    // }
+
+    while ( (iter < max_iter) && (residual_norm > tolerance) ) {
+        
+#ifdef USE_STL
+        std::for_each(__EXEC
+                      begin(r_rev), end(r_rev), 
+                      [=, A=A.getData(), b=b.getData(), x=x.getData(), x_old=x_old.getData()](int i) {
+            double diag = 1.;          // Diagonal element
+            double sigma = 0.0;        // Just a temporary value
+
+            x[i] = b[i];
+            sigma = std::transform_reduce(A + i * cols,
+                                          A + (i + 1) * cols,
+                                          x_old,
+                                          0.0);
+
+            diag = A_ptr[i + i * cols];
+            sigma -= diag * x_old_ptr[i];
+            x[i] = (x[i] - sigma) * omega / diag;
+        });
+        // std::for_each(__EXEC
+        //               begin(r_rev), end(r_rev), 
+        //               [&](int i) {
+        //     double diag = 1.;          // Diagonal element
+        //     double sigma = 0.0;        // Just a temporary value
+
+        //     x(i) = b(i);
+        //     sigma = std::transform_reduce(A.getVec().begin() + i * A.numCols(),
+        //                                   A.getVec().begin() + (i + 1) * A.numCols(),
+        //                                   x_old.getVec().begin(),
+        //                                   0.0);
+
+        //     diag = A(i, i);
+        //     sigma -= diag * x_old(i);
+        //     x(i) = (x(i) - sigma) * omega / diag;
+        // });
+#else
+#pragma omp parallel for
+        for(int i = A.numRows() - 1; i >= 0; i--) {
+            double diag = 1.;          // Diagonal element
+            double sigma = 0.0;        // Just a temporary value
+
+            x(i) = b(i);
+
+#pragma omp simd reduction(+ : sigma)
+            for(int j = 0; j < A.numCols(); ++j) {
+                sigma += A(i, j) * x_old(j);
+            }
+
+            diag = A(i, i);
+            sigma -= diag * x_old(i);
+            x(i) = (x(i) - sigma) * omega / diag;
+        }
+#endif
+        
+        x.exchangeRealHalo();
+
+#ifdef USE_STL
+        std::transform(__EXEC
+                       x_old.getVec().begin(), x_old.getVec().end(),
+                       x.getVec().begin(), x.getVec().begin(),
+                       [=](const double& v1, const double& v2) {
+                            return v2 + (1 - omega) * v1;
+                        });
+        copyVector(x, x_old);
+#else
+#pragma omp parallel for simd
+        for(int i = 0; i < x.numRows(); ++i) {
+            x(i) += (1 - omega) * x_old(i);
+            x_old(i) = x(i);
+        }
+#endif
+
         calculateResidual(A, x, b, res);
-        // residual_norm = calculateNorm(res) / calculateNorm(b);
+        residual_norm = calculateNorm(res) / calculateNorm(b);
+
+        if (my_rank == 0)
+            cout << iter << '\t' << residual_norm << endl;
+
+        ++iter;
     }
-
-//     while ( (iter < max_iter) && (residual_norm > tolerance) ) {
-        
-// #ifdef USE_STL
-//         std::for_each(__EXEC
-//                       begin(r_rev), end(r_rev), 
-//                       [=, A=A.getData(), b=b.getData(), x=x.getData(), x_old=x_old.getData(), cols](int i) {
-//             double diag = 1.;          // Diagonal element
-//             double sigma = 0.0;        // Just a temporary value
-
-//             x[i] = b[i];
-//             sigma = std::transform_reduce(A + i * cols,
-//                                           A + (i + 1) * cols,
-//                                           x_old,
-//                                           0.0);
-
-//             diag = A_ptr[i + i * cols];
-//             sigma -= diag * x_old_ptr[i];
-//             x[i] = (x[i] - sigma) * omega / diag;
-//         });
-//         // std::for_each(__EXEC
-//         //               begin(r_rev), end(r_rev), 
-//         //               [&](int i) {
-//         //     double diag = 1.;          // Diagonal element
-//         //     double sigma = 0.0;        // Just a temporary value
-
-//         //     x(i) = b(i);
-//         //     sigma = std::transform_reduce(A.getVec().begin() + i * A.numCols(),
-//         //                                   A.getVec().begin() + (i + 1) * A.numCols(),
-//         //                                   x_old.getVec().begin(),
-//         //                                   0.0);
-
-//         //     diag = A(i, i);
-//         //     sigma -= diag * x_old(i);
-//         //     x(i) = (x(i) - sigma) * omega / diag;
-//         // });
-// #else
-// #pragma omp parallel for
-//         for(int i = A.numRows() - 1; i >= 0; i--) {
-//             double diag = 1.;          // Diagonal element
-//             double sigma = 0.0;        // Just a temporary value
-
-//             x(i) = b(i);
-
-// #pragma omp simd reduction(+ : sigma)
-//             for(int j = 0; j < A.numCols(); ++j) {
-//                 sigma += A(i, j) * x_old(j);
-//             }
-
-//             diag = A(i, i);
-//             sigma -= diag * x_old(i);
-//             x(i) = (x(i) - sigma) * omega / diag;
-//         }
-// #endif
-        
-//         x.exchangeRealHalo();
-
-// #ifdef USE_STL
-//         std::transform(__EXEC
-//                        x_old.getVec().begin(), x_old.getVec().end(),
-//                        x.getVec().begin(), x.getVec().begin(),
-//                        [=](const double& v1, const double& v2) {
-//                             return v2 + (1 - omega) * v1;
-//                         });
-//         copyVector(x, x_old);
-// #else
-// #pragma omp parallel for simd
-//         for(int i = 0; i < x.numRows(); ++i) {
-//             x(i) += (1 - omega) * x_old(i);
-//             x_old(i) = x(i);
-//         }
-// #endif
-
-//         calculateResidual(A, x, b, res);
-//         residual_norm = calculateNorm(res) / calculateNorm(b);
-
-//         if (my_rank == 0)
-//             cout << iter << '\t' << residual_norm << endl;
-
-//         ++iter;
-//     }
 }
