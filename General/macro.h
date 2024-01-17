@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include "termination.h"
 
-#define EMPTY -1            // Keep it negative!
+#define EMPTY_VAL -1            // Keep it negative!
 #define PHYS_BOUNDARY 1
 
 enum {

@@ -59,31 +59,31 @@ void Vector::resize(Dimensions const &in_dims) {
      * Indentify chunks of halo elements that are stored at the end of the vector
      * and calculate their sizes and starting IndicesBegEnd.
      */
-    if (ngb_pid.west != EMPTY)
+    if (ngb_pid.west != EMPTY_VAL)
         associateChunkData(jmax_loc, tmp_halo_start_index,
                            halo_chunk_size.west, halo_chunk_start_index.west);
 
-    if (ngb_pid.south != EMPTY)
+    if (ngb_pid.south != EMPTY_VAL)
         associateChunkData(imax_loc, tmp_halo_start_index,
                            halo_chunk_size.south, halo_chunk_start_index.south);
 
-    if (ngb_pid.north != EMPTY)
+    if (ngb_pid.north != EMPTY_VAL)
         associateChunkData(imax_loc, tmp_halo_start_index,
                            halo_chunk_size.north, halo_chunk_start_index.north);
 
-    if (ngb_pid.east != EMPTY)
+    if (ngb_pid.east != EMPTY_VAL)
         associateChunkData(jmax_loc, tmp_halo_start_index,
                            halo_chunk_size.east, halo_chunk_start_index.east);
 
     /* Identify which elements should be sent */
-    if (ngb_pid.west != EMPTY) {
+    if (ngb_pid.west != EMPTY_VAL) {
         on_boarder_ids.west.resize(jmax_loc);
         for(int j = 0; j <= dims.getInternalIndRangeJ().end - dims.getInternalIndRangeJ().beg; ++j) {
             on_boarder_ids.west[j] = j;
         }
     }
 
-    if (ngb_pid.east != EMPTY) {
+    if (ngb_pid.east != EMPTY_VAL) {
         on_boarder_ids.east.resize(jmax_loc);
         for(int j = 0; j <= dims.getInternalIndRangeJ().end - dims.getInternalIndRangeJ().beg; ++j) {
             on_boarder_ids.east[j] = j + (dims.getInternalIndRangeJ().end - dims.getInternalIndRangeJ().beg + 1)
@@ -91,14 +91,14 @@ void Vector::resize(Dimensions const &in_dims) {
         }
     }
 
-    if (ngb_pid.south != EMPTY) {
+    if (ngb_pid.south != EMPTY_VAL) {
         on_boarder_ids.south.resize(imax_loc);
         for(int i = 0; i <= dims.getInternalIndRangeI().end - dims.getInternalIndRangeI().beg; ++i) {
             on_boarder_ids.south[i] = (dims.getInternalIndRangeJ().end - dims.getInternalIndRangeJ().beg + 1) * i;
         }
     }
 
-    if (ngb_pid.north != EMPTY) {
+    if (ngb_pid.north != EMPTY_VAL) {
         on_boarder_ids.north.resize(imax_loc);
         for(int i = 0; i <= dims.getInternalIndRangeI().end - dims.getInternalIndRangeI().beg; ++i) {
             on_boarder_ids.north[i] = (dims.getInternalIndRangeJ().end - dims.getInternalIndRangeJ().beg)
@@ -134,7 +134,7 @@ void Vector::exchangeRealHalo() {
 
     /* ****************************************************************************************** */
     // Assemble send buffers to west
-    if (ngb_pid.west != EMPTY) {
+    if (ngb_pid.west != EMPTY_VAL) {
         for(int n = 0; n < halo_chunk_size.west; ++n) {
             snd_buf_we[n] = data[on_boarder_ids.west[n]];
         }
@@ -142,7 +142,7 @@ void Vector::exchangeRealHalo() {
     }
 
     // Assemble send buffers to south
-    if (ngb_pid.south != EMPTY) {
+    if (ngb_pid.south != EMPTY_VAL) {
         for(int n = 0; n < halo_chunk_size.south; ++n) {
             snd_buf_sn[n] = data[on_boarder_ids.south[n]];
         }
@@ -150,7 +150,7 @@ void Vector::exchangeRealHalo() {
     }
 
     // Receive from east
-    if (ngb_pid.east != EMPTY) {
+    if (ngb_pid.east != EMPTY_VAL) {
         MPI_Recv(rcv_buf_we.data(), rcv_buf_we.size(), MPI_DOUBLE, ngb_pid.east, tag_we, MPI_COMM_WORLD, &status);
         int id = halo_chunk_start_index.east;
         for(int n = 0; n < halo_chunk_size.east; ++n) {
@@ -159,7 +159,7 @@ void Vector::exchangeRealHalo() {
     }
 
     // Receive from north
-    if (ngb_pid.north != EMPTY) {
+    if (ngb_pid.north != EMPTY_VAL) {
         MPI_Recv(rcv_buf_sn.data(), rcv_buf_sn.size(), MPI_DOUBLE, ngb_pid.north, tag_sn, MPI_COMM_WORLD, &status);
         int id = halo_chunk_start_index.north;
         for(int n = 0; n < halo_chunk_size.north; ++n) {
@@ -169,7 +169,7 @@ void Vector::exchangeRealHalo() {
     /* ****************************************************************************************** */
     /* ****************************************************************************************** */
     // Assemble send buffers to east
-    if (ngb_pid.east != EMPTY) {
+    if (ngb_pid.east != EMPTY_VAL) {
         for(int n = 0; n < halo_chunk_size.east; ++n) {
             snd_buf_we[n] = data[on_boarder_ids.east[n]];
         }
@@ -177,7 +177,7 @@ void Vector::exchangeRealHalo() {
     }
 
     // Assemble send buffers to north
-    if (ngb_pid.north != EMPTY) {
+    if (ngb_pid.north != EMPTY_VAL) {
         for(int n = 0; n < halo_chunk_size.north; ++n) {
             snd_buf_sn[n] = data[on_boarder_ids.north[n]];
         }
@@ -185,7 +185,7 @@ void Vector::exchangeRealHalo() {
     }
 
     // Receive from west
-    if (ngb_pid.west != EMPTY) {
+    if (ngb_pid.west != EMPTY_VAL) {
         MPI_Recv(rcv_buf_we.data(), rcv_buf_we.size(), MPI_DOUBLE, ngb_pid.west, tag_we, MPI_COMM_WORLD, &status);
         int id = halo_chunk_start_index.west;
         for(int n = 0; n < halo_chunk_size.west; ++n) {
@@ -194,7 +194,7 @@ void Vector::exchangeRealHalo() {
     }
 
     // Receive from south
-    if (ngb_pid.south != EMPTY) {
+    if (ngb_pid.south != EMPTY_VAL) {
         MPI_Recv(rcv_buf_sn.data(), rcv_buf_sn.size(), MPI_DOUBLE, ngb_pid.south, tag_sn, MPI_COMM_WORLD, &status);
         int id = halo_chunk_start_index.south;
         for(int n = 0; n < halo_chunk_size.south; ++n) {

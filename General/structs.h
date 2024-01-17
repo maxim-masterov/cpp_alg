@@ -60,14 +60,14 @@ struct Faces {
 
 /*!
  * @brief Structure of the neighboring processes ids.
- * @note \e EMPTY means there is no neighbor in that direction.
+ * @note \e EMPTY_VAL means there is no neighbor in that direction.
  */
 struct Neighbors {
-    int east = EMPTY;
-    int west = EMPTY;
-    int south = EMPTY;
-    int north = EMPTY;
-    int central = EMPTY;
-    double dummy_don_not_remove = EMPTY;
+    int east = EMPTY_VAL;
+    int west = EMPTY_VAL;
+    int south = EMPTY_VAL;
+    int north = EMPTY_VAL;
+    int central = EMPTY_VAL;
+    double dummy_don_not_remove = EMPTY_VAL;
 };
 #endif

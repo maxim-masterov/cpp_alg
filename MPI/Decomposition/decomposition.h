@@ -40,7 +40,7 @@
 class Decomposition {
     IndicesIJ num_subdomains;   // Total number of subdomains in each direction
     Neighbors ngb_pid;          // Structure with indicators of the PIDs of the
-                                // neighboring subdomains (EMPTY stands for "no neighbor")
+                                // neighboring subdomains (EMPTY_VAL stands for "no neighbor")
     Neighbors phys_bound;       // Structure with indicators of the presence of
                                 // the physical (real) boundary (PHYS_BOUNDARY
                                 // stands for existing physical boundary)
@@ -65,7 +65,7 @@ public:
     /*!
      * @brief Return a structure of the neighboring processes IDs.
      * If there is no neighboring process, the member of the structure is set
-     * to EMPTY. Otherwise, the member is equal to the neighboring process ID.
+     * to EMPTY_VAL. Otherwise, the member is equal to the neighboring process ID.
      */
     inline const Neighbors &getNgbPid() const { return ngb_pid; }
 
@@ -73,7 +73,7 @@ public:
      * @brief Return a structure that indicates existence of the physical
      *        boundaries.
      * If member of the structure is equal to PHYS_BOUNDARY, the boundary exists.
-     * Otherwise, the member is equal to EMPTY.
+     * Otherwise, the member is equal to EMPTY_VAL.
      */
     inline const Neighbors &getPhysBound() const { return phys_bound; }
 

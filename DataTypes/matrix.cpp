@@ -49,16 +49,16 @@ int Matrix::countHaloElts(Dimensions const &in_dims) {
     int jmax_loc = dims.getNumEltsLoc().j;
     int halo_elts = 0;
 
-    if (in_dims.getDecomposition().getNgbPid().east != EMPTY)
+    if (in_dims.getDecomposition().getNgbPid().east != EMPTY_VAL)
         halo_elts += jmax_loc;
 
-    if (in_dims.getDecomposition().getNgbPid().west != EMPTY)
+    if (in_dims.getDecomposition().getNgbPid().west != EMPTY_VAL)
         halo_elts += jmax_loc;
 
-    if (in_dims.getDecomposition().getNgbPid().south != EMPTY)
+    if (in_dims.getDecomposition().getNgbPid().south != EMPTY_VAL)
         halo_elts += imax_loc;
 
-    if (in_dims.getDecomposition().getNgbPid().north != EMPTY)
+    if (in_dims.getDecomposition().getNgbPid().north != EMPTY_VAL)
         halo_elts += imax_loc;
 
     return halo_elts;

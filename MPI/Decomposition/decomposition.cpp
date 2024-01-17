@@ -169,12 +169,12 @@ void Decomposition::checkForPhysicalBoundaries() {
      * Simply check if the neighboring subdomain exists. If not - there is a
      * physical boundary of that site.
      */
-    if (ngb_pid.west == EMPTY)
+    if (ngb_pid.west == EMPTY_VAL)
         phys_bound.west = PHYS_BOUNDARY;
-    if (ngb_pid.east == EMPTY)
+    if (ngb_pid.east == EMPTY_VAL)
         phys_bound.east = PHYS_BOUNDARY;
-    if (ngb_pid.south == EMPTY)
+    if (ngb_pid.south == EMPTY_VAL)
         phys_bound.south = PHYS_BOUNDARY;
-    if (ngb_pid.north == EMPTY)
+    if (ngb_pid.north == EMPTY_VAL)
         phys_bound.north = PHYS_BOUNDARY;
 }

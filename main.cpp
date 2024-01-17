@@ -147,7 +147,6 @@ int main(int argc, char** argv) {
      */
     initialize(argc, argv);
 
-    // tbb::set_threadpool_size(128);
     // tbb::global_control(tbb::global_control::max_allowed_parallelism, 128);
     // tbb::global_control MAXTHREADS(tbb::global_control::max_allowed_parallelism, 64);
     // tbb::task_scheduler_observer obs;

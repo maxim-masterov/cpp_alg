@@ -60,31 +60,31 @@ void Field::enumerateIDs() {
      *  - east-south
      *  - east-north
      */
-    if (dims.getDecomposition().getNgbPid().west != EMPTY &&
-            dims.getDecomposition().getNgbPid().south != EMPTY) {
+    if (dims.getDecomposition().getNgbPid().west != EMPTY_VAL &&
+            dims.getDecomposition().getNgbPid().south != EMPTY_VAL) {
         ++total_num_elts;
     }
-    if (dims.getDecomposition().getNgbPid().west != EMPTY &&
-            dims.getDecomposition().getNgbPid().north != EMPTY) {
+    if (dims.getDecomposition().getNgbPid().west != EMPTY_VAL &&
+            dims.getDecomposition().getNgbPid().north != EMPTY_VAL) {
         ++total_num_elts;
     }
-    if (dims.getDecomposition().getNgbPid().east != EMPTY &&
-            dims.getDecomposition().getNgbPid().south != EMPTY) {
+    if (dims.getDecomposition().getNgbPid().east != EMPTY_VAL &&
+            dims.getDecomposition().getNgbPid().south != EMPTY_VAL) {
         ++total_num_elts;
     }
-    if (dims.getDecomposition().getNgbPid().east != EMPTY &&
-            dims.getDecomposition().getNgbPid().north != EMPTY) {
+    if (dims.getDecomposition().getNgbPid().east != EMPTY_VAL &&
+            dims.getDecomposition().getNgbPid().north != EMPTY_VAL) {
         ++total_num_elts;
     }
 
     ids.resize(total_num_elts);
 
     /*
-     * Initialize vactor of ids with "EMPTY". This will help to indicate corner
+     * Initialize vactor of ids with "EMPTY_VAL". This will help to indicate corner
      * halo elements
      */
     for(int i = 0; i < total_num_elts; ++i) {
-        ids[i] = EMPTY;
+        ids[i] = EMPTY_VAL;
     }
 
     /* Enumerate internal elements */
@@ -96,7 +96,7 @@ void Field::enumerateIDs() {
     }
 
     /* Enumerate halo elements in the west */
-    if (dims.getDecomposition().getNgbPid().west != EMPTY) {
+    if (dims.getDecomposition().getNgbPid().west != EMPTY_VAL) {
         for(int j = dims.getInternalIndRangeJ().beg; j <= dims.getInternalIndRangeJ().end; ++j) {
             ids[j] = counter;
             ++counter;
@@ -104,7 +104,7 @@ void Field::enumerateIDs() {
     }
 
     /* Enumerate halo elements in the south */
-    if (dims.getDecomposition().getNgbPid().south != EMPTY) {
+    if (dims.getDecomposition().getNgbPid().south != EMPTY_VAL) {
         for(int i = dims.getInternalIndRangeI().beg; i <= dims.getInternalIndRangeI().end; ++i) {
             ids[i * dims.getNumElts().j] = counter;
             ++counter;
@@ -112,7 +112,7 @@ void Field::enumerateIDs() {
     }
 
     /* Enumerate halo elements in the north */
-    if (dims.getDecomposition().getNgbPid().north != EMPTY) {
+    if (dims.getDecomposition().getNgbPid().north != EMPTY_VAL) {
         for(int i = dims.getInternalIndRangeI().beg; i <= dims.getInternalIndRangeI().end; ++i) {
             ids[dims.getNumElts().j - 1 + i * dims.getNumElts().j] = counter;
             ++counter;
@@ -120,7 +120,7 @@ void Field::enumerateIDs() {
     }
 
     /* Enumerate halo elements in the east */
-    if (dims.getDecomposition().getNgbPid().east != EMPTY) {
+    if (dims.getDecomposition().getNgbPid().east != EMPTY_VAL) {
         for(int j = dims.getInternalIndRangeJ().beg; j <= dims.getInternalIndRangeJ().end; ++j) {
             ids[j + (dims.getNumElts().i - 1) * dims.getNumElts().j] = counter;
             ++counter;

@@ -31,18 +31,18 @@ void Dimensions::findInternalIndices() {
     elts_loc_with_halo = elts_loc;
 
     // Check the number of elements in j-th direction
-    if (decomp.getNgbPid().west != EMPTY) {
+    if (decomp.getNgbPid().west != EMPTY_VAL) {
         elts_loc_with_halo.i++;
     }
-    if (decomp.getNgbPid().east != EMPTY) {
+    if (decomp.getNgbPid().east != EMPTY_VAL) {
         elts_loc_with_halo.i++;
     }
 
     // Check the number of elements in j-th direction
-    if (decomp.getNgbPid().south != EMPTY) {
+    if (decomp.getNgbPid().south != EMPTY_VAL) {
         elts_loc_with_halo.j++;
     }
-    if (decomp.getNgbPid().north != EMPTY) {
+    if (decomp.getNgbPid().north != EMPTY_VAL) {
         elts_loc_with_halo.j++;
     }
 
@@ -50,16 +50,16 @@ void Dimensions::findInternalIndices() {
     end_j = elts_loc_with_halo.j;
 
     // Check for the index range for the internal elements
-    if (decomp.getNgbPid().west != EMPTY) {
+    if (decomp.getNgbPid().west != EMPTY_VAL) {
         start_i = 1;
     }
-    if (decomp.getNgbPid().south != EMPTY) {
+    if (decomp.getNgbPid().south != EMPTY_VAL) {
         start_j = 1;
     }
-    if (decomp.getNgbPid().east != EMPTY) {
+    if (decomp.getNgbPid().east != EMPTY_VAL) {
         end_i--;
     }
-    if (decomp.getNgbPid().north != EMPTY) {
+    if (decomp.getNgbPid().north != EMPTY_VAL) {
         end_j--;
     }
 
