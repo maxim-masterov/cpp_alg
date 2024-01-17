@@ -37,20 +37,17 @@ void Solver::copyVector(Vector &vec_in, Vector &vec_out) {
      *     assign element of vec_in(n) to vec_out(n)
      */
     // NOT_IMPLEMENTED
+#ifdef USE_STL
+    std::copy(__EXEC
+              vec_in.getVec().begin(),
+              vec_in.getVec().end(),
+              vec_out.getVec().begin());
+#else
+#pragma omp parallel for simd
     for(int n = 0; n < vec_in.numRows(); ++n) {
         vec_out(n) = vec_in(n);
     }
-// #ifdef USE_STL
-//     std::copy(__EXEC
-//               vec_in.getVec().begin(),
-//               vec_in.getVec().end(),
-//               vec_out.getVec().begin());
-// #else
-// #pragma omp parallel for simd
-//     for(int n = 0; n < vec_in.numRows(); ++n) {
-//         vec_out(n) = vec_in(n);
-//     }
-// #endif
+#endif
 }
 
 void Solver::calculateResidual(Matrix &A, Vector &x, Vector &b, Vector &res) {
@@ -145,8 +142,6 @@ void Solver::solveJacobi(Matrix &A, Vector &x, Vector &b) {
 
     residual_norm = 10. * tolerance;
 
-    copyVector(x, x_old);
-
     /* Start the main loop */
 #ifdef USE_MPI
     /*
@@ -160,20 +155,8 @@ void Solver::solveJacobi(Matrix &A, Vector &x, Vector &b) {
 #ifdef USE_STL
     auto r = std::views::common(std::views::iota(0, (int)A.numRows()));
     auto r_rev = r | std::views::reverse;
-    double* A_ptr = A.getData();
-    double* b_ptr = b.getData();
-    double* x_ptr = x.getData();
-    double* x_old_ptr = x_old.getData();
     int cols = A.numCols();
-    int rows = A.numRows();
 #endif
-
-    // // for(int n = 0; n < 1e5; ++n) {
-    // copyVector(x, res);
-    // for(int n = 0; n < 10; ++n) {
-    //     calculateResidual(A, x, b, res);
-    //     // residual_norm = calculateNorm(res) / calculateNorm(b);
-    // }
 
     while ( (iter < max_iter) && (residual_norm > tolerance) ) {
         
@@ -190,26 +173,10 @@ void Solver::solveJacobi(Matrix &A, Vector &x, Vector &b) {
                                           x_old,
                                           0.0);
 
-            diag = A_ptr[i + i * cols];
-            sigma -= diag * x_old_ptr[i];
+            diag = A[i + i * cols];
+            sigma -= diag * x_old[i];
             x[i] = (x[i] - sigma) * omega / diag;
         });
-        // std::for_each(__EXEC
-        //               begin(r_rev), end(r_rev), 
-        //               [&](int i) {
-        //     double diag = 1.;          // Diagonal element
-        //     double sigma = 0.0;        // Just a temporary value
-
-        //     x(i) = b(i);
-        //     sigma = std::transform_reduce(A.getVec().begin() + i * A.numCols(),
-        //                                   A.getVec().begin() + (i + 1) * A.numCols(),
-        //                                   x_old.getVec().begin(),
-        //                                   0.0);
-
-        //     diag = A(i, i);
-        //     sigma -= diag * x_old(i);
-        //     x(i) = (x(i) - sigma) * omega / diag;
-        // });
 #else
 #pragma omp parallel for
         for(int i = A.numRows() - 1; i >= 0; i--) {

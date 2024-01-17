@@ -47,5 +47,5 @@ enum {
 #define __PAR_UNSEQ std::execution::par_unseq,
 #define __UNSEQ std::execution::unseq,
 #define __NONE
-#define __EXEC __PAR_UNSEQ
+#define __EXEC __SEQ
 #endif
